@@ -1,0 +1,19 @@
+# Ruff is the linter our CI runs. This file is the configuration, so that
+# "it lints on my machine" and "it lints in CI" mean the same thing.
+[tool.ruff]
+line-length = 110
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-q"
+filterwarnings = ["ignore::DeprecationWarning", "ignore::FutureWarning"]
+
+[tool.ruff.lint.per-file-ignores]
+# Lab 1 trains a deliberately fragile model, Lab 3 imports after matplotlib setup.
+"lab1_break_notebook/*.py" = ["B008"]

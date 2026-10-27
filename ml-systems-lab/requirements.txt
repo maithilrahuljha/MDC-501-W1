@@ -1,0 +1,47 @@
+# =============================================================================
+# MDC-501 - From Notebook to Production: pinned ingredients for every lab
+# =============================================================================
+# Install everything at once:
+#     python -m pip install -r requirements.txt
+#
+# "Pinned" means the exact version is written down. That is the whole point:
+# the student's laptop, your laptop and the CI server all get the SAME code.
+# An unpinned requirements.txt is a bug that waits a month to happen.
+#
+# Everything here is free, open source, and needs no login or API key.
+# =============================================================================
+
+# --- core data + model (Lab 1, 3, 4, 6) --------------------------------------
+numpy==2.1.3
+pandas==2.2.3
+scipy==1.17.1
+scikit-learn==1.5.2
+joblib==1.6.0
+
+# --- serving (Lab 1, Lab 4) ---------------------------------------------------
+fastapi==0.115.4
+starlette==0.41.3
+uvicorn[standard]==0.32.0
+pydantic==2.14.1
+httpx==0.27.2
+requests==2.32.3
+
+# --- plots (Lab 3) ------------------------------------------------------------
+matplotlib==3.9.2
+
+# --- experiment tracking, local mode (Lab 6) ----------------------------------
+# MLflow is the open-source answer to "which run produced this model?".
+# It writes everything into a local ./mlruns folder. No account needed.
+mlflow==2.17.2
+
+# --- Vertex AI, cloud mode (Lab 6, OPTIONAL) ----------------------------------
+# Only used by  python pipeline.py --mode vertex
+# You can skip this install and still finish the whole course.
+google-cloud-aiplatform==1.71.1
+
+# --- the free public app for Lab 5 (Hugging Face Spaces) ----------------------
+gradio==5.9.1
+
+# --- developer tools ----------------------------------------------------------
+pytest==8.3.3
+ruff==0.17.3

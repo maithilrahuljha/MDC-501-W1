@@ -1,0 +1,396 @@
+================================================================================
+  MDC-501 · FROM NOTEBOOK TO PRODUCTION · instructions.txt
+  Plain-English guide. Read top to bottom. Do not skip. About 2 hours total.
+  You do NOT need to know Git, Python, Docker, APIs or cloud platforms.
+  Strange words are explained in brackets [like this] the first time they appear.
+================================================================================
+
+PART A — WHAT YOU ARE BUILDING
+================================================================================
+You are building a small machine that guesses which customers will cancel their
+phone contract. Then you put it on the internet so a friend can open a link and
+use it. On the way you will break your own work four times on purpose: breaking it
+in a quiet room is how engineers stop it breaking in front of customers.
+
+A "model" [a recipe learned from examples] is easy to make on your laptop and
+useless there, because nobody can reach it. This course is the trip from "works on
+my laptop" to "works for strangers at 3 a.m. without me".
+
+The trip has four stops: why a laptop model falls over when it meets messy real
+requests (Lab 1); why a model quietly gets worse as the world changes (Lab 3); the two
+ways to ask a model for answers, all at once or one at a time (Lab 4); and how to
+store, share and publish the work (Parts G and H). You will run code that is given to
+you, read its messages, and change a line or two — how professionals learn too.
+
+PART B — WHAT YOU NEED BEFORE YOU START
+================================================================================
+Tick every box now, not halfway through.
+
+  [ ] A computer with 4 GB free disk space, Windows / Mac / Linux.
+  [ ] Internet. You will download about 300 MB, once.
+  [ ] A free GitHub account (Part G).
+  [ ] A free Hugging Face account (Part H) — or skip it and use Plan B there.
+  [ ] A free Google account (only for the easy Colab path in Part E).
+  [ ] Python installed. If unsure, do steps 1–8.
+
+1. In your browser go to: https://www.python.org/downloads/
+2. Click the big yellow button named "Download Python 3.x.x". Any version 3.10 or
+   higher is fine.
+3. When it finishes, open the downloaded file (click it once in Downloads).
+4. WINDOWS: on the first screen, at the BOTTOM, tick the small box named
+   "Add python.exe to PATH". This is the one step people skip and regret.
+5. WINDOWS: click "Install Now", wait, click "Close".
+   MAC: click "Continue" three times, then "Agree", then "Install". Type your Mac
+   password if asked, then "Install Software".
+6. Open a terminal [the black window where you type commands instead of clicking]:
+   WINDOWS: click Start, type  cmd , click "Command Prompt".
+   MAC: press Command+Space, type  Terminal , press Enter.
+7. In that window type this and press Enter:   python --version
+8. You should see something like "Python 3.12.4". If you see "not recognised"
+   (Windows) or "command not found" (Mac), type  python3 --version  instead.
+   Whichever word works, use THAT word in every command below. This guide says
+   "python"; yours may be "python3".
+
+PART C — GET THE CODE ONTO YOUR COMPUTER
+================================================================================
+You will download a folder of code as a ZIP file [a compressed folder]. No Git.
+1. Open the course GitHub page your instructor gave you. It looks like
+   https://github.com/SOMETHING/MDC-501-W1
+2. Click the GREEN button named "Code" (top right, above the file list), then the
+   last item in the menu: "Download ZIP".
+3. The file lands in your Downloads folder, usually MDC-501-W1-main.zip.
+4. WINDOWS: right-click it, choose "Extract All...", click "Extract".
+   MAC: double-click it.
+5. Open the new folder MDC-501-W1-main, then open the folder inside named
+   ml-systems-lab. You should see README.md, requirements.txt, instructions.txt,
+   and folders lab1_break_notebook, lab3_drift, lab4_batch_vs_online, lab6_vertex,
+   hf_space, streamlit_space, tests.
+6. If instead you see only another ZIP file, extract that one too (browsers
+   sometimes zip twice). Note the full path of ml-systems-lab — on Windows usually
+   C:\Users\YOURNAME\Downloads\MDC-501-W1-main\ml-systems-lab
+
+PART D — LAB 1: BREAK THE NOTEBOOK  (35 minutes)
+================================================================================
+WHAT: you will start a small web service on your own computer and send it one good
+request and three bad ones. The good one works. The bad ones crash. You read why.
+WHY: because this happens on the internet every day and nobody warns you.
+
+D.1 Install the ingredients (one time, 3–8 minutes)
+1. In your terminal type this and press Enter, replacing the capitals with your
+   path from Part C step 6. Keep the double quotes — they protect spaces:
+       cd "C:\Users\Asha\Downloads\MDC-501-W1-main\ml-systems-lab"
+2. Type this and press Enter:
+       python -m pip install -r requirements.txt
+3. Wait while lines like "Collecting scikit-learn" scroll by. That is the
+   ingredients [libraries = ready-made code by other people] downloading. Stop when
+   you see "Successfully installed".
+
+D.2 Train the model
+4. Type:   cd lab1_break_notebook
+5. Type:   python train.py
+6. Wait ~10 seconds. You should see a box saying TRAINING COMPLETE and "test
+   accuracy" between 0.78 and 0.95. That means "of 100 customers, we guessed about
+   82 right". A new folder named artifacts now holds your saved model.
+
+D.3 Start the service
+7. Type:   python app.py     You should see "Lab 1 service starting" and a line with
+   http://127.0.0.1:8000/docs . This window now belongs to the service: do not type
+   in it, do not close it. Closing it kills the service.
+
+D.4 Look at it in a browser
+8. In your browser type exactly:   http://127.0.0.1:8000/docs
+9. You should see a page titled "Lab 1 - Break the Notebook" with green boxes.
+   Click "POST /predict_validated", then "Try it out", then "Execute". You get a
+   "churn_probability" number between 0 and 1 — a real prediction from your own
+   computer. (127.0.0.1 means "this computer"; nothing left your machine.)
+
+D.5 Send the good and the bad requests
+10. Open a SECOND terminal window (Part B step 6 again) and keep the first one open:
+    the first is busy listening, so it cannot send.
+11. In the new window type these two lines, Enter after each:
+       cd "C:\Users\Asha\Downloads\MDC-501-W1-main\ml-systems-lab\lab1_break_notebook"
+       python test_requests.py
+12. You should see four cases and a table: CASE 1 works (HTTP 200); CASE 2, 3 and 4
+    crash (HTTP 500); the last line reads "RESULT: the service behaved exactly as
+    Lab 1 intends."
+13. Look back at your FIRST terminal: three loud blocks starting "!! UNHANDLED
+    CRASH". That is what an outage looks like from the inside.
+14. Read what each failure means. This is the whole point of Lab 1:
+    (a) MISSING COLUMN — the request forgot the monthly bill. The model got a row
+        with a hole in it. A check at the door would refuse it: Pillar 1, DATA
+        VALIDATION [checking data before anything uses it].
+    (b) WRONG DATA TYPE — the number 12 arrived as the word "twelve". A human copes;
+        the model cannot. Publishing and enforcing "this must be a number" is
+        Pillar 4, A SERVING CONTRACT [the written rules of the door].
+    (c) UNSEEN CATEGORY — a contract type "lifetime" appeared, but the model only
+        knew monthly, one_year, two_year. Block it (Pillar 1) and notice reality
+        invented it (Pillar 5, MONITORING [watching live traffic]).
+15. Each failure is also a test nobody wrote: one automatic test per failure would
+    have caught it before a user did. That is Pillar 2, TESTING.
+16. In the first terminal press Ctrl+C to stop the service. Close that window.
+
+PART E — LAB 3: WATCH A MODEL GO STALE  (25 minutes)
+================================================================================
+WHAT: a simulation where the world changes halfway, so a frozen model gets worse
+and worse while a retrained model keeps up.
+WHY: nobody will email you when your model stops working.
+WHICH WAY? Use the EASY WAY (Colab) if you have not installed everything for Lab 1;
+use the LOCAL WAY if you have. Reason: Colab needs zero installs and shows the
+picture in the browser.
+
+E.1 THE EASY WAY — Google Colab, nothing to install
+1. Go to:   https://colab.research.google.com     and sign in with Google.
+2. Click "File" (top-left), then "Upload notebook" (or a tab named "Upload").
+3. Click "Choose File", go to ml-systems-lab → lab3_drift, pick drift_experiment.py,
+   click Open. Colab may say it cannot open a .py as a notebook — fine, it still
+   copies the file in. Continue below.
+4. If a notebook opened with the code inside, skip to step 6.
+5. Click the folder-shaped icon at the far left, then the small button with an
+   upward arrow ("Upload to session storage"). Choose drift_experiment.py and wait.
+6. Click "+ Code" to get an empty cell, type:   !python drift_experiment.py
+7. Press Shift+Enter (or click the round play button). Wait ~10 seconds.
+8. Read the text, then find the picture of two lines: red = frozen model, blue =
+   retrained model. No picture? Click the folder icon, open "outputs", double-click
+   drift_accuracy.png.
+
+E.2 THE LOCAL WAY — you already installed everything
+9. In your terminal type these two lines, Enter after each, then wait ~15 seconds
+   and read the text:
+       cd "C:\Users\Asha\Downloads\MDC-501-W1-main\ml-systems-lab\lab3_drift"
+       python drift_experiment.py
+10. Now open the picture:
+    WINDOWS: type   start outputs\drift_accuracy.png
+    MAC:     type   open outputs/drift_accuracy.png
+
+E.3 What to look for
+11. Find the line "Static model accuracy first drops below 70% at SAMPLE INDEX
+    4,098." Your number may differ slightly. Write it down. The frozen model falls
+    off a cliff around day 40, and nothing crashed, nothing emailed you, nothing
+    turned red. It just quietly stopped being right.
+12. Find the small table "before drift" / "after drift": about 0.80 then about 0.55
+    for the frozen model, while the retrained one recovers to about 0.83.
+13. Say this out loud: the code did not get worse. The WORLD changed.
+
+PART F — LAB 4: SAME MODEL, TWO DOORS  (30 minutes)
+================================================================================
+WHAT: you will ask the same trained model for 10,000 answers two ways — all at once,
+and one at a time over the web — and time both.
+WHY: the shape of the question decides your cost, your speed and your hardware.
+1. In a terminal type these two lines, Enter after each:
+       cd "C:\Users\Asha\Downloads\MDC-501-W1-main\ml-systems-lab\lab4_batch_vs_online"
+       python online.py
+   You should see "Lab 4 online service" and a line ending /predict . Leave this
+   window open and untouched — it is serving.
+2. Open a SECOND terminal and type these two lines:
+       cd "C:\Users\Asha\Downloads\MDC-501-W1-main\ml-systems-lab\lab4_batch_vs_online"
+       python batch.py
+3. After ~10 seconds you see "BATCH COMPLETE" with a tiny total time (often 0.01 s)
+   and a file like outputs/predictions_20260101T120000Z.csv . One command answered
+   all 10,000 customers.
+4. Type:   python benchmark.py     then WAIT. It sends 10,000 real web requests one
+   after another, slowly on purpose: about 40 seconds, progress every 2,000. In a
+   hurry? Press Ctrl+C and run   python benchmark.py --rows 2000
+5. Read four numbers in the table: batch total time (~0.004 s), online total time
+   (~39 s), average latency per online request [delay per request] (~3.9 ms), and
+   "ONLINE IS SLOWER BY A FACTOR OF" (~10,000x).
+6. The model did the same arithmetic both times. Online also pays, every trip, for
+   opening a connection, packaging the request, checking the inputs and unpackaging
+   the answer. That overhead [extra work around the real work] is the difference.
+7. Remember this: use BATCH when the answer can wait (last night's customers, a
+   monthly report). Use ONLINE only when a human is waiting now — and budget for
+   delay, because your slowest 5% of requests is what users remember.
+8. Press Ctrl+C in the first terminal to stop the service.
+
+PART G — PUT YOUR WORK ON GITHUB  (15 minutes)
+================================================================================
+WHAT: your own copy of this project on GitHub, uploaded through the website.
+WHY: it is your backup, your portfolio, and what Plan B in Part H deploys from.
+1. Go to   https://github.com   and click "Sign up" if you have no account. Use an
+   email you can open — you must click their confirmation link. Then sign in.
+2. Click the "+" button at the top right, then "New repository".
+3. In "Repository name" type:   mdc501-ml-lab . Choose "Public" (so your instructor
+   and Part H can read it). Leave every checkbox (README, .gitignore) UNTICKED.
+4. Click the green "Create repository".
+5. On the new page, find the link named "uploading an existing file" and click it.
+   (Also reachable as: button "Add file" near the top right → "Upload files".)
+6. A dashed box appears saying "Drag files here". Open your file manager
+   (Windows: File Explorer; Mac: Finder) and go to your ml-systems-lab folder.
+7. Drag in at least lab1_break_notebook, lab3_drift, lab4_batch_vs_online and
+   requirements.txt. Dragging a FOLDER works in Chrome, Edge and Firefox.
+8. Wait until the file names stop appearing. This can take a minute — do not click
+   anything else yet.
+9. Scroll to the box "Commit changes" [commit = save with a note]. Type
+   "my ML systems lab" and click the green "Commit changes".
+10. Your repository address now reads github.com/YOURNAME/mdc501-ml-lab . Copy it
+    into a note. Part H needs it.
+
+PART H — PUT YOUR MODEL ONLINE FOR FREE  (30 minutes)
+================================================================================
+WHAT: give your model a public web address a stranger can open.
+WHY: an unreachable model is not a product. Everything here uses fake data, so no
+real customer information is exposed.
+HEADS-UP: in 2026 Hugging Face made Gradio and Docker Spaces usually require a paid
+PRO plan; free accounts in good standing may still run up to two Gradio Spaces on
+"ZeroGPU" hardware. Try Plan A. If it asks for money, use Plan B — both give you a
+public link and neither is worth paying for on a student budget.
+
+PLAN A — Hugging Face Spaces
+1. Go to   https://huggingface.co/join  . Enter an email, a password and a
+   username, click "Next", then click the link in the email they send (check spam).
+2. Go to   https://huggingface.co/new-space  . If that page does not load, go to
+   huggingface.co, click "Spaces" at the top, then look for the button named
+   "Create new Space" (usually near the top right).
+3. In "Space name" type:   churn-predictor . In "License" choose "mit".
+4. Under "Select the Space SDK" click "Gradio". RECOMMENDATION: Gradio, not Docker —
+   it needs two files and no Dockerfile, so there is less to get wrong.
+5. Under "Space hardware" choose "ZeroGPU" if offered, else "CPU basic". If both
+   show a price, STOP and use Plan B — do not enter payment details.
+6. Leave visibility "Public", click "Create Space".
+7. On your new Space page, click the tab named "Files" (upper middle).
+8. Click "Add file", then "Upload files".
+9. Upload BOTH files from your computer's ml-systems-lab → hf_space folder:
+   app.py and requirements.txt. Upload the FILES, not the folder: they must sit at
+   the top level of the Space. Use the "choose your files" link rather than dragging.
+10. Click "Commit changes to main".
+11. Click the tab named "App". "Building" or a turning circle [spinner] is normal
+    for 2–5 minutes.
+12. When ready you see "Will this customer leave?", four input boxes and a "Predict"
+    button. Set tenure to 4, charges to 120, support calls to 5, contract "monthly",
+    click "Predict": you should see a high percentage and "Likely to leave".
+13. Copy the address at the top of your browser; it looks like
+    https://huggingface.co/spaces/YOURNAME/churn-predictor . Send it to a friend and
+    ask them to open it on their phone. It works anywhere, and it cost nothing.
+
+PLAN B — Streamlit Community Cloud (free for public apps, no card)
+14. Put these three files in your GitHub repo from Part G, from your computer's
+    ml-systems-lab → streamlit_space folder: app.py, requirements.txt, README.md.
+    Use "Add file" → "Upload files". (To keep them in a folder: first use "Add
+    file" → "Create new file", name it streamlit_space/app.py, put one line
+    "# placeholder" in the box, commit, then open that folder and upload.)
+15. Go to   https://share.streamlit.io   and click "Continue with GitHub". Sign in,
+    then click "Authorize streamlit" when GitHub asks.
+16. Click "Create app" at the top right (it may say "New app"). If asked "Do you
+    already have an app?", choose "Yup, I have an app".
+17. Fill in three boxes:
+        Repository     YOURNAME/mdc501-ml-lab
+        Branch         main
+        Main file path streamlit_space/app.py     (or app.py if uploaded at root)
+18. Click "Deploy" and wait 2–4 minutes. The log's last lines should say the app is
+    running.
+19. Your app is live at an address like
+    https://YOURNAME-mdc501-ml-lab.streamlit.app — copy it and share it as in
+    Plan A step 13.
+20. Note: Community Cloud puts quiet apps to sleep. The first visitor afterwards
+    sees a "waking up" page for ~30 seconds. Normal, and a real trade-off you will
+    meet in industry.
+
+PART I — HOW TO CHECK IT WORKED
+================================================================================
+  [ ] 1. "python --version" prints Python 3.10 or higher.
+  [ ] 2. Your ml-systems-lab folder gained lab1_break_notebook/artifacts/model.joblib
+         after you ran train.py.
+  [ ] 3. train.py ended with a box saying "TRAINING COMPLETE" and accuracy between
+         0.78 and 0.95.
+  [ ] 4. With app.py running, http://127.0.0.1:8000/health shows the words "status"
+         and "ok" in a browser.
+  [ ] 5. test_requests.py ended with "RESULT: the service behaved exactly as Lab 1
+         intends." and its table shows 200/500/500/500 for "naive" and
+         200/422/422/422 for "fixed".
+  [ ] 6. Lab 3 produced outputs/drift_accuracy.png: one red line falling steeply,
+         one blue line recovering.
+  [ ] 7. Lab 4 printed a table where online total time is at least 100× the batch
+         total time, and average online latency is a few milliseconds.
+  [ ] 8. Your GitHub address opens in a private/incognito window AND your public app
+         link (Plan A or Plan B) opens on someone else's phone.
+If 1–7 pass and 8 fails, your model is fine — only the publishing is wrong, and
+Part J covers that.
+
+PART J — IF SOMETHING GOES WRONG
+================================================================================
+Errors are information, not insults. Match the message, do the fix.
+ 1. "python is not recognised" / "command not found: python"
+    Python is missing or was installed without the PATH tick. Reinstall from
+    python.org and TICK "Add python.exe to PATH" — or simply type python3.
+ 2. "ModuleNotFoundError: No module named 'fastapi'" (or 'sklearn', 'pandas')
+    The ingredients went to a different Python than the one running your script.
+    Fix: cd ml-systems-lab, run  python -m pip install -r requirements.txt
+ 3. "cd: no such file or directory" / "cannot find the path specified"
+    Typo, or your ZIP extracted twice (a folder inside a folder). Type dir (Windows)
+    or ls (Mac) to see real names, or type cd + space, DRAG the folder in, press Enter.
+ 4. "Address already in use" / "error while attempting to bind"
+    An old app.py or online.py owns that port. Press Ctrl+C there, or use
+    set PORT=8001 (Windows) / export PORT=8001 (Mac) and open ...:8001/docs .
+ 5. "Could not reach the service (ConnectError)"
+    The service is not running, or it is the other lab — both use port 8000. Restart
+    app.py (or online.py), leave it open, and send requests from the SECOND window.
+ 6. "[app.py] I cannot find artifacts/model.joblib"
+    You ran app.py before train.py, or from the wrong folder. cd lab1_break_notebook,
+    run python train.py, then python app.py.
+ 7. Lab 1 gives four successes (all 200) instead of three crashes
+    Versions drifted or files were edited. From ml-systems-lab run
+    python -m pip install -r requirements.txt and check /predict still has no checks.
+ 8. Lab 3 says "the static model never fell below 70%"
+    That seed's collapse stayed just above the line. Run
+    python drift_experiment.py --drift-day 30 . The lesson is unchanged.
+ 9. Lab 3 finishes but no picture appears in Colab
+    "!python" cannot show pictures inline. Folder icon → "outputs" → double-click
+    drift_accuracy.png.
+10. Lab 3: "cannot save file into a non-existent directory"
+    An older copy of the script. Re-download the ZIP (Part C).
+11. benchmark.py looks frozen
+    It is talking, not frozen: 10,000 round trips take ~40 seconds. Wait, or press
+    Ctrl+C and rerun with  --rows 2000 .
+12. Lab 4 cannot start: "port 8000 is in use"
+    Lab 1's app.py was never stopped. Ctrl+C in that window. One service per port.
+13. GitHub's upload box stays grey and ignores your drag
+    Some browsers block folder drag-and-drop. Click "choose your files" instead. To
+    make a folder first: "Add file" → "Create new file" → name it lab1/train.py
+14. Hugging Face marks "Gradio" as paid / asks for a paid plan
+    The 2026 free-tier change. Pick "ZeroGPU" if offered (free for eligible accounts;
+    your app needs no GPU). If nothing free is offered, do PART H, PLAN B — no card.
+15. Hugging Face Space shows "Runtime error" / "Exited with code 1"
+    app.py is in a subfolder or requirements.txt is missing. On the "Files" tab both
+    must be at the TOP. Re-upload them individually, then click "Restart this Space".
+16. Hugging Face Space stuck on "Building" for ages
+    First builds download a lot. Wait 10 minutes, then read "Logs": "No module
+    named ..." means requirements.txt did not upload.
+17. Streamlit log says "ModuleNotFoundError"
+    requirements.txt is not beside app.py, or is missing a package. Put it in the SAME
+    folder, then use the ⋮ menu → "Reboot app".
+18. Streamlit says "Error running app / file not found"
+    "Main file path" does not match reality. Open the repo on GitHub, click app.py,
+    copy what follows your repo name (e.g. streamlit_space/app.py) and paste it exactly.
+19. Your public link works for you, but a friend sees "404"
+    Still building, or you sent the settings page. Open your own link in a private
+    window; send the one ending "/spaces/YOURNAME/NAME" or ".streamlit.app".
+20. It worked yesterday, today says "No module named ..." again
+    A new terminal starts in a different folder with a different Python. cd back into
+    lab1_break_notebook and rerun python app.py. Nothing was lost.
+Still stuck? It is almost always wrong folder, wrong Python, or a missing ingredient.
+Check those in that order, and paste the LAST FIVE LINES of the error when you ask.
+
+PART K — WHAT YOU JUST LEARNED
+================================================================================
+Six sentences to repeat to a friend who missed class.
+  • A model in a notebook is a recipe nobody can order from: Lab 1 crashed on
+    missing fields, wrong types and brand-new categories — fixed by a contract at
+    the door (Pillar 1 validation, Pillar 4 serving contract) and a test per failure
+    (Pillar 2).
+  • A model does not stay good on its own: Lab 3's frozen model slid from ~80% to
+    ~50% while the retrained one recovered to ~89%, so you watch the inputs (Pillar
+    5 monitoring) and record which version answered which request (Pillar 3).
+  • Batch and online are one model asked two questions: Lab 4 answered 10,000 rows
+    in milliseconds in one call versus ~40 seconds as 10,000 web requests — batch
+    wins on cost, online wins on freshness.
+  • Static training means fit once and freeze; dynamic training means refit on a
+    schedule or trigger. Lab 3 ran both under the same drift, so the difference came
+    from the schedule, not the algorithm.
+  • Deployment is part of the work, not extra credit: Parts G and H turned a laptop
+    folder into a versioned repository and a public link — a demo became a product.
+  • All five pillars showed up in two hours of clicking: validate the data, test the
+    behaviour, version the artifacts, serve behind a contract, monitor reality. Do
+    those five and your model survives contact with the real world.
+
+================================================================================
+  End. Keep your public link — it is real work. Put it on your CV.
+================================================================================
