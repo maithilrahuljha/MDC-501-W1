@@ -1,0 +1,34 @@
+# ---- Python bytecode -------------------------------------------------------
+__pycache__/
+*.py[cod]
+
+# ---- virtual environments (never commit these) ------------------------------
+.venv/
+venv/
+env/
+
+# ---- things the labs generate at runtime ------------------------------------
+# These are OUTPUTS, not sources. Regenerate them any time by running the lab.
+ml-systems-lab/lab1_break_notebook/artifacts/
+ml-systems-lab/lab4_batch_vs_online/artifacts/
+ml-systems-lab/lab4_batch_vs_online/outputs/
+ml-systems-lab/lab4_batch_vs_online/data/
+ml-systems-lab/lab3_drift/outputs/
+ml-systems-lab/lab6_vertex/mlruns/
+ml-systems-lab/lab6_vertex/artifacts/
+
+# ---- MLflow's local cache ---------------------------------------------------
+mlruns/
+mlartifacts/
+
+# ---- tooling ---------------------------------------------------------------
+.pytest_cache/
+.ruff_cache/
+.DS_Store
+Thumbs.db
+
+# ---- secrets (the one thing that must NEVER be committed) -------------------
+.env
+.env.*
+*.pem
+*credentials*.json

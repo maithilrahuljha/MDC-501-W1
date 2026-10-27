@@ -1,0 +1,6 @@
+# Everything the Hugging Face Space installs before it starts app.py.
+# Keep this list SHORT. Every extra line is another thing that can fail at build time.
+gradio==5.9.1
+scikit-learn==1.5.2
+pandas==2.2.3
+numpy==2.1.3
