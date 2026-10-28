@@ -44,14 +44,24 @@ ARTIFACT_DIR = BASE_DIR / "artifacts"
 MODEL_PATH = ARTIFACT_DIR / "model.joblib"
 METADATA_PATH = ARTIFACT_DIR / "model_metadata.json"
 
-if not MODEL_PATH.exists():
-    raise SystemExit(
-        "\n[app.py] I cannot find artifacts/model.joblib.\n"
-        "         Fix: run 'python train.py' first (in this same folder),\n"
-        "         then run 'python app.py' again.\n"
-    )
+ARTIFACT_HELP = (
+    "\n[app.py] I cannot find artifacts/model.joblib.\n"
+    "         Fix: run 'python train.py' first (in this same folder),\n"
+    "         then run 'python app.py' again.\n"
+)
 
-model = joblib.load(MODEL_PATH)
+# NOTE (this line is itself a lesson): we load the model WITHOUT crashing at
+# import time. Two reasons:
+#   1. Importing a module must not kill the process. A test runner, a container,
+#      or `uvicorn app:app` should be able to read this file with no model on disk.
+#   2. A missing model is a 503 "not ready", not a dead server. A crash takes the
+#      whole process down; a 503 keeps the health check answering while someone
+#      fixes it.
+# Students still get the friendly message, because __main__ checks before serving.
+# (We learned this the hard way: our own CI went red, because a fresh clone has no
+# artifacts/ folder. The tests were quietly relying on a file on the developer's
+# laptop. Pillar 2 catches exactly this kind of thing.)
+model = joblib.load(MODEL_PATH) if MODEL_PATH.exists() else None
 metadata = json.loads(METADATA_PATH.read_text(encoding="utf-8")) if METADATA_PATH.exists() else {}
 ALLOWED_CONTRACT_TYPES = metadata.get("allowed_categories", {}).get(
     "contract_type", ["monthly", "one_year", "two_year"]
@@ -93,6 +103,12 @@ def loud_crash(path: str, exc: Exception) -> JSONResponse:
     )
 
 
+def model_not_ready() -> JSONResponse:
+    """503: the service is up, but it has nothing to predict with. Honest, not dead."""
+    return JSONResponse(status_code=503, content={"error": "model_not_loaded",
+                                                  "detail": ARTIFACT_HELP.strip()})
+
+
 # -----------------------------------------------------------------------------
 # (1) NAIVE ENDPOINT - exactly what a notebook export looks like.
 #     No schema, no checks, no limits. Any dict is accepted and shoved at the model.
@@ -100,6 +116,8 @@ def loud_crash(path: str, exc: Exception) -> JSONResponse:
 @app.post("/predict")
 def predict_naive(payload: dict):
     STATS["requests"] += 1
+    if model is None:
+        return model_not_ready()
     try:
         row = pd.DataFrame([payload])      # hope it is right. it is not.
         probability = float(model.predict_proba(row)[0, 1])
@@ -132,6 +150,8 @@ class ChurnRequest(BaseModel):
 @app.post("/predict_validated")
 def predict_validated(request: ChurnRequest):
     STATS["requests"] += 1
+    if model is None:
+        return model_not_ready()
     try:
         row = pd.DataFrame([request.model_dump()])
         probability = float(model.predict_proba(row)[0, 1])
@@ -150,7 +170,8 @@ def health():
     # Pillar 5 (MONITORING) starts here: something must be able to ask
     # "are you alive, and which model are you serving?" at 3 a.m.
     return {
-        "status": "ok",
+        "status": "ok",                       # the process is alive
+        "model_loaded": model is not None,    # ...but is it useful yet?
         "model_version": metadata.get("model_version", "unknown"),
         "trained_on_rows": metadata.get("trained_on_rows"),
         "offline_accuracy": metadata.get("accuracy"),
@@ -164,6 +185,8 @@ def stats():
 
 
 if __name__ == "__main__":
+    if model is None:          # `python app.py` should still explain itself politely
+        raise SystemExit(ARTIFACT_HELP)
     port = int(os.environ.get("PORT", "8000"))
     print()
     print("=" * 68)

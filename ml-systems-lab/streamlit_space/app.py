@@ -24,6 +24,9 @@ OK:   a page loads with a form; pressing Submit shows a churn percentage and a v
 # what you rewrite.
 # =============================================================================
 
+import platform
+import sys
+
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -87,6 +90,23 @@ def load_model() -> Pipeline:
 
 MODEL = load_model()
 PREDICTIONS = {"count": 0}
+
+# A startup banner. It costs one line and it answers the question you will ask
+# the first time a deploy misbehaves: "what is actually running in there?"
+# On Streamlit Community Cloud you can read these lines under "Manage app".
+try:
+    import sklearn
+
+    print(
+        "[startup] python", platform.python_version(), "|",
+        "streamlit", st.__version__, "|",
+        "scikit-learn", sklearn.__version__, "|",
+        "pandas", pd.__version__, "|",
+        "numpy", np.__version__,
+        file=sys.stderr,
+    )
+except Exception as banner_error:  # never let a log line break the app
+    print(f"[startup] version banner skipped: {banner_error}", file=sys.stderr)
 
 st.set_page_config(page_title="Churn predictor - MDC-501", page_icon="📉")
 st.title("Will this customer leave?")
