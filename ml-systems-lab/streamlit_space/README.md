@@ -4,9 +4,24 @@ This folder is the backup road to a public URL, used when Hugging Face asks for 
 paid plan. It is also the *fastest* road: Streamlit logs in with the GitHub account
 you already made in Part G.
 
-- `app.py` — the same model, the same four inputs, a different set of widgets.
+- `app.py` — **the whole course in one page**: a sidebar with four labs.
 - `requirements.txt` — what the server installs before it starts. **Read the comment
   at the top**: ranges here, pins in `../requirements.txt`, and the reason why.
+
+## What the app contains
+
+| Sidebar entry | What it does | Real or simulated? |
+|---|---|---|
+| **Start here** | Map of the labs and the five pillars | — |
+| **Lab 1 — Break the notebook** | Churn form (a contract), then three buttons that send bad requests and show the real error text | Fully real |
+| **Lab 3 — Static vs dynamic (drift)** | Simulates a stream, drifts the world on a chosen day, charts frozen vs retrained accuracy, prints the first sample below 70% | Real, smaller stream so it finishes in seconds |
+| **Lab 4 — Batch vs online** | Times one big call against N single-row calls; table, average and p95 latency | Real but **in-process** (no HTTP on Cloud — the tab says so) |
+| **Lab 6 — Pipelines** | Runs a real training job and shows metrics, plus the MLflow ↔ Vertex AI mapping | Real training, no cloud account, nothing billed |
+
+Why one page instead of five apps? A deployed app runs exactly one entrypoint file.
+The first version of this app pointed at only the churn form, which is why students
+kept asking where the other labs were. A sidebar fixes that without needing five
+separate Spaces.
 
 ## Deploy in five steps (details in `../instructions.txt`, Part H, Plan B)
 
@@ -41,18 +56,27 @@ and it is the only honest answer to "why is it taking so long?".
 one line to that log:
 
 ```
-[startup] python 3.12.7 | streamlit 1.40.2 | scikit-learn 1.5.x | pandas 2.2.x | numpy 2.1.x
+[startup] python 3.12.7 | streamlit 1.40.2 | pandas 2.2.x | numpy 2.1.x
 ```
 
 If you can see that line, the deploy worked; anything after it is app logic, not
 platform problems.
 
+## After every code change
+
+Streamlit Community Cloud re-runs your script when the branch changes, but it
+**caches the installed packages**. So:
+
+- Changed `app.py` only → the app updates itself, or use **Rerun** in the app menu.
+- Changed `requirements.txt` → **⋮ menu → Reboot app**. Without a reboot you will
+  keep running the old environment and wonder why the fix did nothing.
+
 ## Notes
 
-- The app trains its model on first load (about two seconds) and caches it with
-  `@st.cache_resource`, so the second visitor waits for nothing.
+- The app trains its model on first use and caches it (`@st.cache_resource`), so the
+  second visitor waits for nothing.
 - Community Cloud apps sleep after a long quiet period. The first visit after a sleep
-  shows a "waking up" page — that is normal, and it is a real production concern too.
+  shows a "waking up" page — normal, and a real production concern too.
 - Everything is synthetic. No secrets, no API keys, no files to upload besides these.
 - Deploy from `main`, not from a short-lived branch: if that branch is ever deleted,
   the app breaks.

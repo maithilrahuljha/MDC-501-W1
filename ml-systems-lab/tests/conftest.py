@@ -17,6 +17,7 @@ LAB3 = PACKAGE_ROOT / "lab3_drift"
 LAB4 = PACKAGE_ROOT / "lab4_batch_vs_online"
 LAB5 = PACKAGE_ROOT / "hf_space"
 LAB6 = PACKAGE_ROOT / "lab6_vertex"
+STREAMLIT = PACKAGE_ROOT / "streamlit_space"
 
 # Lab 3 and Lab 4 have unique file names, so plain folders on sys.path are safe.
 for folder in [LAB3, LAB4]:
