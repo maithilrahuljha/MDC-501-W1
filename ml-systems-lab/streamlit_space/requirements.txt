@@ -1,6 +1,19 @@
 # What Streamlit Community Cloud installs before it runs app.py.
-# Keep this list short and pinned -- a deploy fails fast when versions wander.
-streamlit==1.40.2
-scikit-learn==1.5.2
-pandas==2.2.3
-numpy==2.1.3
+#
+# WHY RANGES HERE BUT EXACT PINS IN ../requirements.txt?
+# ------------------------------------------------------
+# On your laptop you control the Python version, so pins make your results
+# reproducible (that is the whole lesson of this course).
+# On Streamlit Community Cloud you do NOT control the Python version - it is
+# whatever that platform gives you today, and it changes.
+# If a pin has no prebuilt wheel for that Python, pip falls back to COMPILING
+# the library from source: numpy alone then takes 10-20 minutes, and a stuck
+# "in the oven" page is exactly what you see. Ranges let pip pick whichever
+# released version has a ready-made wheel for the runtime it was given, so the
+# build finishes in about 90 seconds.
+#
+# Rule of thumb: pin when you own the machine, allow ranges when you rent it.
+streamlit>=1.40,<2
+scikit-learn>=1.5,<1.8
+pandas>=2.2,<3
+numpy>=1.26,<3

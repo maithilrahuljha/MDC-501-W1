@@ -79,3 +79,24 @@ def test_unseen_category_is_rejected(client):
     body = {**GOOD, "contract_type": "lifetime"}
     assert client.post("/predict", json=body).status_code == 500
     assert client.post("/predict_validated", json=body).status_code == 422
+
+
+def test_service_survives_a_missing_model():
+    """Regression test for our own CI bug.
+
+    A fresh clone has no artifacts/ folder. Importing app.py must still work,
+    and the endpoints must answer 503 (not crash, not 500) until a model exists.
+    """
+    from conftest import load_module
+
+    fresh_app = load_module(LAB1 / "app.py", "lab1_app_without_artifacts")
+    fresh_app.model = None                      # pretend train.py was never run
+    fresh_app.metadata = {}
+
+    with TestClient(fresh_app.app, raise_server_exceptions=False) as client:
+        health = client.get("/health")
+        assert health.status_code == 200        # the process is still alive
+        assert health.json()["model_loaded"] is False
+
+        assert client.post("/predict", json=GOOD).status_code == 503
+        assert client.post("/predict_validated", json=GOOD).status_code == 503

@@ -46,10 +46,9 @@ Tick every box now, not halfway through.
    WINDOWS: click Start, type  cmd , click "Command Prompt".
    MAC: press Command+Space, type  Terminal , press Enter.
 7. In that window type this and press Enter:   python --version
-8. You should see something like "Python 3.12.4". If you see "not recognised"
-   (Windows) or "command not found" (Mac), type  python3 --version  instead.
-   Whichever word works, use THAT word in every command below. This guide says
-   "python"; yours may be "python3".
+8. You should see "Python 3.12.4" or similar. If you see "not recognised" (Windows)
+   or "command not found" (Mac), type  python3 --version  instead — and use that word
+   everywhere below.
 
 PART C — GET THE CODE ONTO YOUR COMPUTER
 ================================================================================
@@ -81,9 +80,9 @@ D.1 Install the ingredients (one time, 3–8 minutes)
        cd "C:\Users\Asha\Downloads\MDC-501-W1-main\ml-systems-lab"
 2. Type this and press Enter:
        python -m pip install -r requirements.txt
-3. Wait while lines like "Collecting scikit-learn" scroll by. That is the
-   ingredients [libraries = ready-made code by other people] downloading. Stop when
-   you see "Successfully installed".
+3. Wait while "Collecting scikit-learn" and similar lines scroll by: those are the
+   ingredients [libraries = ready-made code] downloading. Stop at "Successfully
+   installed".
 
 D.2 Train the model
 4. Type:   cd lab1_break_notebook
@@ -165,8 +164,7 @@ E.2 THE LOCAL WAY — you already installed everything
 E.3 What to look for
 11. Find the line "Static model accuracy first drops below 70% at SAMPLE INDEX
     4,098." Your number may differ slightly. Write it down. The frozen model falls
-    off a cliff around day 40, and nothing crashed, nothing emailed you, nothing
-    turned red. It just quietly stopped being right.
+    off a cliff around day 40, and nothing crashed, nothing emailed you.
 12. Find the small table "before drift" / "after drift": about 0.80 then about 0.55
     for the frozen model, while the retrained one recovers to about 0.83.
 13. Say this out loud: the code did not get worse. The WORLD changed.
@@ -264,9 +262,8 @@ PLAN A — Hugging Face Spaces
 PLAN B — Streamlit Community Cloud (free for public apps, no card)
 14. Put these three files in your GitHub repo from Part G, from your computer's
     ml-systems-lab → streamlit_space folder: app.py, requirements.txt, README.md.
-    Use "Add file" → "Upload files". (To keep them in a folder: first use "Add
-    file" → "Create new file", name it streamlit_space/app.py, put one line
-    "# placeholder" in the box, commit, then open that folder and upload.)
+    Use "Add file" → "Upload files". To keep them in a folder, first use "Add file"
+    → "Create new file", name it streamlit_space/app.py, commit, then upload there.
 15. Go to   https://share.streamlit.io   and click "Continue with GitHub". Sign in,
     then click "Authorize streamlit" when GitHub asks.
 16. Click "Create app" at the top right (it may say "New app"). If asked "Do you
@@ -354,16 +351,21 @@ Errors are information, not insults. Match the message, do the fix.
 16. Hugging Face Space stuck on "Building" for ages
     First builds download a lot. Wait 10 minutes, then read "Logs": "No module
     named ..." means requirements.txt did not upload.
-17. Streamlit log says "ModuleNotFoundError"
+17. Streamlit says "in the oven" for more than 10 minutes
+    A normal build takes 2-4 minutes. Ten minutes means stuck, not slow: open
+    "Manage app" (bottom right) and read the log. If it repeats "Building wheel"
+    or sits on one line, click the ⋮ menu → "Reboot app"; if that fails, delete
+    the app and recreate it. In "Advanced settings", set Python to 3.12.
+18. Streamlit log says "ModuleNotFoundError"
     requirements.txt is not beside app.py, or is missing a package. Put it in the SAME
     folder, then use the ⋮ menu → "Reboot app".
-18. Streamlit says "Error running app / file not found"
+19. Streamlit says "Error running app / file not found"
     "Main file path" does not match reality. Open the repo on GitHub, click app.py,
     copy what follows your repo name (e.g. streamlit_space/app.py) and paste it exactly.
-19. Your public link works for you, but a friend sees "404"
+20. Your public link works for you, but a friend sees "404"
     Still building, or you sent the settings page. Open your own link in a private
     window; send the one ending "/spaces/YOURNAME/NAME" or ".streamlit.app".
-20. It worked yesterday, today says "No module named ..." again
+21. It worked yesterday, today says "No module named ..." again
     A new terminal starts in a different folder with a different Python. cd back into
     lab1_break_notebook and rerun python app.py. Nothing was lost.
 Still stuck? It is almost always wrong folder, wrong Python, or a missing ingredient.
