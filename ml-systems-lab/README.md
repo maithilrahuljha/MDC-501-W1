@@ -56,7 +56,7 @@ ml-systems-lab/
 │   ├── app.py
 │   ├── requirements.txt
 │   └── README.md              <- the Space's own metadata card
-├── streamlit_space/           <- deploy target, Plan B (Streamlit Community Cloud, no card needed)
+├── streamlit_space/           <- Plan B deploy: ONE app, FOUR labs (sidebar: Lab 1 / 3 / 4 / 6)
 │   ├── app.py
 │   ├── requirements.txt
 │   └── README.md
@@ -129,6 +129,11 @@ ruff check .
   free CPU hardware now usually requires a paid PRO plan; free accounts in good standing
   may still run up to two Gradio Spaces on ZeroGPU. That is why `streamlit_space/` exists
   as a genuinely free Plan B. `instructions.txt` Part H walks through both, in order.
+- **`streamlit_space/app.py` is a multi-lab dashboard**, not a single model form: a
+  sidebar switches between Lab 1 (the three real failures), Lab 3 (a smaller drift
+  run), Lab 4 (batch vs single-row, in-process and labelled as such) and Lab 6
+  (a real training run plus the MLflow/Vertex map). A deployed app runs exactly one
+  entrypoint file, so the tabs live in one file rather than across five Spaces.
 
 ## Licence and data
 

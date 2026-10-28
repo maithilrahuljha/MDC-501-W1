@@ -275,8 +275,8 @@ PLAN B — Streamlit Community Cloud (free for public apps, no card)
 18. Click "Deploy" and wait 2–4 minutes. The log's last lines should say the app is
     running.
 19. Your app is live at an address like
-    https://YOURNAME-mdc501-ml-lab.streamlit.app — copy it and share it as in
-    Plan A step 13.
+    https://YOURNAME-mdc501-ml-lab.streamlit.app — copy it and share it. It opens on a
+    page with a sidebar (Start here, Lab 1, Lab 3, Lab 4, Lab 6): all four labs, one link.
 20. Note: Community Cloud puts quiet apps to sleep. The first visitor afterwards
     sees a "waking up" page for ~30 seconds. Normal, and a real trade-off you will
     meet in industry.
@@ -298,7 +298,8 @@ PART I — HOW TO CHECK IT WORKED
   [ ] 7. Lab 4 printed a table where online total time is at least 100× the batch
          total time, and average online latency is a few milliseconds.
   [ ] 8. Your GitHub address opens in a private/incognito window AND your public app
-         link (Plan A or Plan B) opens on someone else's phone.
+         link opens on someone else's phone. On Plan B you should see a sidebar with
+         Start here, Lab 1, Lab 3, Lab 4 and Lab 6 — click each one, none may error.
 If 1–7 pass and 8 fails, your model is fine — only the publishing is wrong, and
 Part J covers that.
 
